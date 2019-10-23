@@ -15,13 +15,15 @@ class User:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
     
-    def __init__(self, id, age, countPhoto, countVideo, countNotes, countGroups):
+    def __init__(self, id, age, countPhoto, countVideo, countNotes, countGroups, cityId):
         self.id = id
         self.age = age
         self.photo = countPhoto
         self.countVideo = countVideo
         self.countNotes = countNotes
         self.countGroups = countGroups
+        self.cityId = cityId
+
 
 def ParseUserFriends(Id, deep):
     if deep < max_deep:
@@ -41,7 +43,7 @@ def ParseUserFriends(Id, deep):
 
 def GetUserInfoById(Id):
     try:
-        userInfo = vk_api.users.get(user_id=Id, fields='bdate, counters', v = 5.101)
+        userInfo = vk_api.users.get(user_id=Id, fields='bdate, counters, city', v = 5.101)
         
         try:
             datestr = userInfo[0]['bdate']
@@ -50,6 +52,12 @@ def GetUserInfoById(Id):
             age = now.year - birthday.year
         except:
             age = 0
+
+
+        try:
+            cityId = userInfo[0]['city']['id']
+        except:
+            cityId = 0
 
         try:
             photos = userInfo[0]['counters']['photos']
@@ -70,7 +78,7 @@ def GetUserInfoById(Id):
         except:
             groups = 0
 
-        return User(Id, age, photos, videos, notes, groups)
+        return User(Id, age, photos, videos, notes, groups, cityId)
 
     except Exception as er:
         print(er)
@@ -79,7 +87,7 @@ def GetUserInfoById(Id):
 
 session = vk.Session(access_token='1ea98e751ea98e751ea98e75fe1ec3dc8611ea91ea98e75426032100701925fae2131d8')
 vk_api = vk.API(session)
-max_deep = 2
+max_deep = 1
 startId = 69504867
 parsedUsers = []
 usersInfo = []
